@@ -1,0 +1,130 @@
+
+### Tutorial: Running DiffDock Jobs Locally Using Docker
+
+This tutorial walks you through running DiffDock jobs locally using the `rbgcsail/diffdock` Docker image.
+
+---
+
+### Prerequisites
+1. **Docker Installed**:
+   Ensure Docker is installed on your system. [Download Docker](https://www.docker.com/products/docker-desktop).
+2. **Pull the DiffDock Image**:
+   Pull the official DiffDock Docker image:
+   ```bash
+   docker pull rbgcsail/diffdock
+   ```
+3. **Prepare Input Files**:
+   Gather your input files (e.g., ligand, protein, and configuration files). Place them in a local directory, such as `/path/to/local/data`.
+
+---
+
+### Step 1: Create a Local Input Directory
+Prepare a directory structure for your job:
+```bash
+mkdir -p /path/to/local/data
+```
+
+Example structure:
+```
+/path/to/local/data/
+├── ligand.sdf            # Input ligand file
+├── protein.pdb           # Protein structure
+├── configs/config.yml    # DiffDock configuration file
+```
+
+---
+
+### Step 2: Start the DiffDock Container
+Run the container interactively with your local directory mounted:
+```bash
+docker run -it --rm \
+    -v /path/to/local/data:/app/data \
+    --entrypoint /bin/bash rbgcsail/diffdock
+```
+
+- `-v /path/to/local/data:/app/data`: Mounts your local directory into the container.
+- `--entrypoint /bin/bash`: Opens an interactive shell inside the container.
+
+---
+
+### Step 3: Run DiffDock Inside the Container
+Inside the container:
+1. Navigate to the mounted directory:
+   ```bash
+   cd /app/data
+   ```
+2. Run the DiffDock script with your input files:
+   ```bash
+   python diffdock.py --config_file configs/config.yml --input_file ligand.sdf --output_dir results/
+   ```
+
+Arguments:
+- `--config_file`: Path to the configuration file.
+- `--input_file`: Path to the ligand file.
+- `--output_dir`: Directory where the output will be saved.
+
+---
+
+### Step 4: Exit the Container
+Once the job completes, exit the container:
+```bash
+exit
+```
+
+---
+
+### Step 5: Access the Output Files
+The output files will be saved in your local directory under `/path/to/local/data/results/`:
+```bash
+ls /path/to/local/data/results/
+```
+
+---
+
+### Step 6: Automate the Process
+For repeated jobs, run DiffDock directly from the command line without entering the container:
+```bash
+docker run -it --rm \
+    -v /path/to/local/data:/app/data \
+    rbgcsail/diffdock \
+    python diffdock.py --config_file /app/data/configs/config.yml --input_file /app/data/ligand.sdf --output_dir /app/data/results/
+```
+
+---
+
+### Example Configuration File (`config.yml`)
+Here’s an example `config.yml` file for DiffDock:
+```yaml
+ligand_path: /app/data/ligand.sdf
+protein_path: /app/data/protein.pdb
+docking_box:
+  center_x: 10.0
+  center_y: 20.0
+  center_z: 30.0
+  size_x: 20.0
+  size_y: 20.0
+  size_z: 20.0
+output_path: /app/data/results/
+```
+
+---
+
+### Tips
+1. **GPU Support**:
+   If you want to use GPUs, ensure NVIDIA Docker is set up:
+   ```bash
+   docker run --gpus all -it --rm \
+       -v /path/to/local/data:/app/data \
+       rbgcsail/diffdock \
+       python diffdock.py --config_file /app/data/configs/config.yml --input_file /app/data/ligand.sdf --output_dir /app/data/results/
+   ```
+
+2. **Debugging**:
+   Use `--entrypoint /bin/bash` to troubleshoot inside the container.
+
+3. **File Locations**:
+   Ensure all input files are in the mounted directory.
+
+---
+
+Let me know if you need further clarification or assistance! 😊
